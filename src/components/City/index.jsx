@@ -17,7 +17,7 @@ export default function Index() {
     const [updateFlag, setUpdateFlag] = useState(false)
     const [data, setData] = useState([])
     const [updateData, setUpdateData] = useState({})
-    const [loading, setLoading] = useState(false)
+    // const [loading, setLoading] = useState(false)
     const [pagination, setPagination] = useState({ current: 1, pageSize: 5, pageSizeOptions: [5, 10, 20, 50] })
 
     useEffect(() => {
@@ -27,11 +27,10 @@ export default function Index() {
             return
         }
         getAllCities()
-        // console.log('@');
     }, [updateFlag])// eslint-disable-line
 
     const getAllCities = () => {
-        axios.get('/cites').then(
+        axios.get('/cities').then(
             (response) => {
                 setData(response.data)
                 setPagination({ ...pagination, total: response.data.length })
@@ -41,7 +40,7 @@ export default function Index() {
 
     //发送分页请求
     const handlePagination = (p) => {
-        axios.get(`/cites/${p.current}/${p.pageSize}`).then(
+        axios.get(`/cities/${p.current}/${p.pageSize}`).then(
             (response) => {
                 setData(response.data)
                 setPagination({
@@ -55,7 +54,7 @@ export default function Index() {
     }
 
     const deleteRow = (record) => {
-        axios.delete(`/cites/${record.id}`).then(
+        axios.delete(`/cities/${record.id}`).then(
             (response) => {
                 if (response.data === 'success') {
                     setUpdateFlag(!updateFlag)
@@ -79,7 +78,7 @@ export default function Index() {
 
     // 新增城市
     const addCity = () => {
-        axios.post('/cites', {
+        axios.post('/cities', {
             name: nameRef.current.input.value,
             countryCode: codeRef.current.input.value,
             district: districtRef.current.input.value,
@@ -118,7 +117,7 @@ export default function Index() {
     }
 
     const updateCity = () => {
-        axios.put('/cites', {uData: updateData}).then(
+        axios.put('/cities', {uData: updateData}).then(
             (response) => {
                 if(response.data === 1) {
                     setUpdateFlag(!updateFlag)
@@ -130,6 +129,26 @@ export default function Index() {
                         description: `城市名称：${updateData.name}`
                     })
                 }
+            }
+        )
+    }
+
+    const findCities = () => {
+        axios.get(
+            '/cities',
+            {
+                params: {
+                    name: nameRef.current.input.value,
+                    countryCode: codeRef.current.input.value,
+                    district: districtRef.current.input.value,
+                    population: populationRef.current.input.value
+                }
+            }
+        ).then(
+            (response) => {
+                // setUpdateFlag(!updateFlag)
+                setData(response.data)
+                setPagination({ ...pagination, total: response.data.length })
             }
         )
     }
@@ -151,7 +170,7 @@ export default function Index() {
                 <Input id='population' placeholder='Population' ref={populationRef} value={updateData.population} onChange={(e) => { changeInputValue(e) }}/>
                 <Button type='primary' onClick={addCity}>Add</Button>
                 <Button type='primary' onClick={updateCity}>Update</Button>
-                <Button type='primary'>Find</Button>
+                <Button type='primary' onClick={findCities}>Find</Button>
             </div>
             <Table className='my-table' bordered rowKey={(data) => data.id}
                 dataSource={data} pagination={pagination} onChange={handlePagination}>
